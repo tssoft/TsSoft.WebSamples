@@ -72,6 +72,10 @@ h2{
             text-align: center;
         }
 
+        .menu ul li a.current{
+            background-color: #eee;
+        }
+
             .menu ul li a:hover {
                 background-color: #eee;
             }
@@ -86,6 +90,7 @@ h2{
 .error {
     margin-bottom: 10px;
     color: #ee0000;
+    -webkit-text-shadow: #fdf2e4 0 1px 0;
     text-shadow: #fdf2e4 0 1px 0;
 }
 
@@ -125,6 +130,7 @@ h2{
     }
 
 .form-container h2 {
+    -webkit-text-shadow: #fdf2e4 0 1px 0;
     text-shadow: #fdf2e4 0 1px 0;
     font-size: 18px;
     margin: 0 0 10px 0;
@@ -135,6 +141,7 @@ h2{
 .form-title {
     margin-bottom: 10px;
     color: #725129;
+    -webkit-text-shadow: #fdf2e4 0 1px 0;
     text-shadow: #fdf2e4 0 1px 0;
 }
 
@@ -161,6 +168,7 @@ h2{
     -webkit-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
     -moz-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
     box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+    -webkit-text-shadow: #addc7e 0 1px 0;
     text-shadow: #addc7e 0 1px 0;
     color: #31540c;
     font-family: helvetica, serif;
@@ -171,6 +179,7 @@ h2{
 }
 
     .submit-button:active {
+        -webkit-text-shadow: #31540c 0 1px 0;
         text-shadow: #31540c 0 1px 0;
         background: #8dc059;
     }
