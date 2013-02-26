@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/content/Site.css")
+    @Scripts.Render("~/scripts/jquery-1.9.1.min.js")
+    <script>
+        $(document).ready(function () {
+            var maxHeight = 0;
+            $(".container:not(.menu)").each(function () {
+                if ($(this).height() > maxHeight)
+                    maxHeight = $(this).height();
+            }).filter('.description-container').height(maxHeight);
+        });
+    </script>
+</head>
+<body>
+    <div class="menu container">
+        <ul>
+            <li><a href="@Url.Action("Index", "WebConfig")">Web.config</a></li>
+            <li><a href="@Url.Action("Index", "Social")">Social</a></li>
+            <li><a href="@Url.Action("Index", "Web")">Web</a></li>
+        </ul>
+    </div>
+    @RenderBody()
+</body>
+</html>

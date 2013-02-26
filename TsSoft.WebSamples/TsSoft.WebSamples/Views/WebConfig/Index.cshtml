@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "Шифрование Web.config";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script>
+
+    function Request() {
+        this.action = null;
+        this.sectionName = null;
+        this.providerName = null;
+    }
+
+    function execute(request) {
+        $.ajax({
+            url: '@Url.Action("Execute", "WebConfig")',
+            data: request,
+            dataType: 'json',
+            type: "post",
+            success: executeSuccessCallback,
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log(jqXHR);
+                console.log(textStatus);
+                console.log(errorThrown);
+            }
+        });
+    }
+
+    function executeSuccessCallback(data) {
+        var message = (data.status === 'error') ? data.message : 'Successful. Look at your web.config'
+        var responseDiv = $('<div class="form-title">' + message + '</div>');
+        (data.status === 'error') ? responseDiv.css({ "color": 'red' }) : responseDiv.css({ 'color': 'green' });
+        $('#response').empty();
+        $('#response').append(responseDiv);
+    }
+
+    $(document).ready(function () {
+        $("#executeForm").on("submit", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        });
+        $(".execute").on("click", function () {
+            var form = $('#executeForm');
+            var request = new Request();
+            request.action = $(this).val();
+            request.sectionName = form.children("#sectionName").val();
+            request.providerName = form.children("#providerName").val();
+            execute(request);
+        });
+    });
+</script>
+<div class="container description-container">
+    <h2>Информация об использовании Web.config</h2>
+    <p>Шифрует/дешефрует определенную секцию файла Web.config.</p>
+    <p>В Section name следует ввести наименование секции, которую следует зашифровать или расшифровать.</p>
+    <p>В Provider name следует ввести имя провайдера. Если оставить пустым - будет использован RsaProtectedConfigurationProvider. Данный провайдер должен существовать.</p>
+</div>
+@using (Html.BeginForm("Execute", "WebConfig", FormMethod.Post, new { @class = "container form-container", @id = "executeForm" }))
+{
+    <div class="form-title">
+        <h2>Encrypt/decrypt Web.config section</h2>
+    </div>
+    <div class="form-title">Section name:</div>
+    @Html.TextBox("sectionName", null, new { @class = "form-field", @id = "sectionName" })<br />
+    <div class="form-title">Provider name:</div>    
+    @Html.TextBox("providerName", null, new { @class = "form-field", @id = "providerName" })<br />
+    <button class="execute submit-button" value="@TsSoft.WebSamples.Models.WebConfigActions.Encrypt">Encrypt section</button><br />    
+    <button class="execute submit-button" value="@TsSoft.WebSamples.Models.WebConfigActions.Decrypt">Decript section</button><br />    
+    <div id="response" class="info"></div>
+}

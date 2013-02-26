@@ -1,0 +1,111 @@
+﻿@model TsSoft.WebSamples.Models.SocialContext
+
+@{
+    ViewBag.Title = "Авторизация и отправка сообщений в социальные сети";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script>
+
+    function Request() {
+        this.message = null;
+        this.title = null;
+        this.socialName = null;
+    }
+
+    Request.prototype.serialize = function () {
+        return 'message=' + this.message + '&title=' + this.title + '&socialName=' + this.socialName;
+    }
+
+    function sendMessage(request) {
+        $.ajax({
+            url: '@Url.Action("MessageRequest", "Social")',
+            data: request,
+            dataType: 'json',
+            type: "post",
+            success: sendMessageSuccessCallback,
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log(jqXHR);
+                console.log(textStatus);
+                console.log(errorThrown);
+            }
+        });
+    }
+
+    function sendMessageSuccessCallback(data) {
+        var responseDiv = $('<div class="form-title">' + data.message + '</div>');
+        (data.status === 'error') ? responseDiv.css({ "color": 'red' }) : responseDiv.css({ 'color': 'green' });
+        $('#response').append(responseDiv);
+        console.log(data);
+    }
+
+    $(document).ready(function () {
+        $(".auth").click(function () {
+            window.location = $(this).val();
+        });
+
+        $("#sendMessageForm").on("submit", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        });
+        $(".send").on("click", function (event) {
+            var form = $('#sendMessageForm');
+            var request = new Request();
+            request.message = form.children("#textMessage").val();
+            request.title = form.children("#tileMessage").val();
+            request.socialName = $(this).attr('name');
+            $('#response').empty();
+            sendMessage(request.serialize());
+        });
+
+        $('#sendAll').on('click', function (event) {
+            $('.send').trigger('click');
+        });
+    });
+</script>
+<div class="container description-container">
+    <h2>Sample for TsSoft.Social.</h2>
+    <p>Сначала следует авторизоваться в нужной социальной сети (дать права приложению).</p>
+    <p>Затем появляется возможность отправлять сообщения. В Facebook сообщения постятся на стену, vk.com &mdash; в заметки (vk.com запрещает web-приложениям работать со стеной).</p>
+    <p>Данные авторизации приложения хранятся при помощи Entity framework. Кнопка Clear authorization очищает модель.</p>
+</div>
+@using (Html.BeginForm("MessageRequest", "Social", FormMethod.Post, new { @class = "container form-container", @id = "sendMessageForm" }))
+{
+    <div class="form-title">
+        <h2>Sending a message in social</h2>
+        @if (ViewBag.message != null)
+        {
+            <h2 class="error">@ViewBag.message</h2>
+        }
+    </div>
+    <div class="form-title">Message:</div>
+    @Html.TextArea("message", new { @class = "form-field", @id = "textMessage" })<br />
+    <div class="form-title">Title (for vk.com):</div>
+    @Html.TextBox("titleMessage", null, new { @class = "form-field", @id = "tileMessage" })<br />
+        if (!Model.FacebookUser.Any(x => x.ExpireTime > DateTime.Now))
+        {
+    <button class="auth submit-button" value="@Url.Action("FacebookAuth", "Social")">Logged in facebook</button><br />
+        }
+        else
+        {
+    <button class="send submit-button" name="facebook">Send in facebook</button><br />
+        }
+        if (!Model.VkUser.Any())
+        {
+    <button class="auth submit-button" value="@Url.Action("VkAuth", "Social")">Logged in vk.com</button><br />
+        }
+        else
+        {
+    <button class="send submit-button" name="vk">Send in vk.com</button><br />
+        }
+        if ((Model.FacebookUser.Count(x => (x.ExpireTime > DateTime.Now)) + Model.VkUser.Count()) > 1)
+        {
+    <button class="submit-button" id="sendAll">Send in all social</button><br />
+        }
+        if ((Model.FacebookUser.Count(x => (x.ExpireTime > DateTime.Now)) + Model.VkUser.Count()) >= 1)
+        {
+    <button class="auth submit-button" value="@Url.Action("ClearAuthorization", "Social")">Clear authorization</button><br />
+        }
+    <div id="response"></div>
+}
