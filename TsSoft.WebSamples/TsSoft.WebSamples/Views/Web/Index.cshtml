@@ -2,3 +2,131 @@
     ViewBag.Title = "";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+@Scripts.Render("~/Scripts/DataTables-1.9.4/media/js/jquery.dataTables.min.js")
+<style>
+    .dataTables_info {
+        margin-top: 7px;
+    }
+    .dataTables_paginate {
+        margin-top: 7px;
+    }
+    .dataTables_paginate a {
+        margin-bottom: .5em;
+        cursor: pointer;
+        border: 1px solid #447314;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        -webkit-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+        -moz-box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+        box-shadow: rgba(255,255,255,0.4) 0 1px 0, inset rgba(255,255,255,0.4) 0 1px 0;
+        -webkit-text-shadow: #addc7e 0 1px 0;
+        text-shadow: #addc7e 0 1px 0;
+        color: #31540c;
+        font-family: helvetica, serif;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        width: 20px;
+        height: 16px;
+        padding: 2px 3px;
+        margin: 0 1px;
+        vertical-align: middle;
+        text-align:center;
+    }
+
+        .dataTables_paginate a.paginate_active {
+            background: #8dc059;
+        }
+
+        .dataTables_paginate a.paginate_button {
+            background: #6aa436;
+        }
+
+        .dataTables_paginate a.previous {
+            margin-right: 5px;
+        }
+
+        .dataTables_paginate a.next {
+            margin-left: 5px;
+        }
+
+        .dataTables_paginate a.paginate_button_disabled {
+        }
+</style>
+<script>
+    $(document).ready(function () {
+        $('#example').dataTable({
+            "bServerSide": true,
+            "bProcessing": true,
+            "bPaginate": true,
+            "bLengthChange": true,
+            "bFilter": false,
+            "sPaginationType": "full_numbers",
+            "bSort": true,
+            "bInfo": true,
+            "bAutoWidth": false,
+            "oLanguage": {
+                "sEmptyTable": "По заданным параметрам ничего не найдено.",
+                "sZeroRecords": "По заданным параметрам ничего не найдено.",
+                "oPaginate": {
+                    "sNext": "→",
+                    "sPrevious": "←",
+                    "sFirst": "⇐",
+                    "sLast": "⇒"
+                },
+                "sLengthMenu": "Отображать _MENU_",
+                "sProcessing": "Поиск...",
+                "sInfo": "Показано локалей с _START_ по _END_ (всего _TOTAL_)",
+                "sInfoEmpty": ""
+            },
+            "sAjaxSource": "@Url.Action("GetData", "Web")",
+            "aoColumns": [
+              { "mData": "Name" },
+              { "mData": "DisplayName" },
+              { "mData": "EnglishName" },
+              { "mData": "NativeName" },
+            ],
+            "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
+                var IsRightToLeft = { name: "IsRightToLeft", value: ($("#IsRightToLeft:checked").length > 0)};
+                var IsNeutralCulture = { name: "IsNeutralCulture", value: ($("#IsNeutralCulture:checked").length > 0) };
+                aoData.push(IsRightToLeft);
+                aoData.push(IsNeutralCulture);
+                console.log(aoData);
+                oSettings.jqXHR = $.ajax({
+                    "dataType": 'json',
+                    "type": "POST",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": fnCallback
+                });
+            },
+        });
+    });
+</script>
+<div class="container info-container">
+    <table class="form">
+        <tr>
+            <td>Является нейтральной культурой</td>
+            <td>@Html.CheckBox("IsNeutralCulture", false)</td>
+        </tr>
+        <tr>
+            <td>Письмо в языке справа налево</td>
+            <td>@Html.CheckBox("IsRightToLeft", false)</td>
+        </tr>
+    </table>
+</div>
+<div class="table-container">
+    <table id="example" class="information">
+        <thead>
+            <tr>
+                <th>Код</th>
+                <th>Наименование</th>
+                <th>Наименование на английском</th>
+                <th>Наименование в оригинале</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>

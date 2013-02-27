@@ -85,27 +85,27 @@
     @Html.TextBox("titleMessage", null, new { @class = "form-field", @id = "tileMessage" })<br />
         if (!Model.FacebookUser.Any(x => x.ExpireTime > DateTime.Now))
         {
-    <button class="auth submit-button" value="@Url.Action("FacebookAuth", "Social")">Logged in facebook</button><br />
+    <button class="auth button submit-button" value="@Url.Action("FacebookAuth", "Social")">Logged in facebook</button><br />
         }
         else
         {
-    <button class="send submit-button" name="facebook">Send in facebook</button><br />
+    <button class="send button submit-button" name="facebook">Send in facebook</button><br />
         }
         if (!Model.VkUser.Any())
         {
-    <button class="auth submit-button" value="@Url.Action("VkAuth", "Social")">Logged in vk.com</button><br />
+    <button class="auth button submit-button" value="@Url.Action("VkAuth", "Social")">Logged in vk.com</button><br />
         }
         else
         {
-    <button class="send submit-button" name="vk">Send in vk.com</button><br />
+    <button class="send button submit-button" name="vk">Send in vk.com</button><br />
         }
         if ((Model.FacebookUser.Count(x => (x.ExpireTime > DateTime.Now)) + Model.VkUser.Count()) > 1)
         {
-    <button class="submit-button" id="sendAll">Send in all social</button><br />
+    <button class="submit-button button" id="sendAll">Send in all social</button><br />
         }
         if ((Model.FacebookUser.Count(x => (x.ExpireTime > DateTime.Now)) + Model.VkUser.Count()) >= 1)
         {
-    <button class="auth submit-button" value="@Url.Action("ClearAuthorization", "Social")">Clear authorization</button><br />
+    <button class="auth button submit-button" value="@Url.Action("ClearAuthorization", "Social")">Clear authorization</button><br />
         }
     <div id="response"></div>
 }
