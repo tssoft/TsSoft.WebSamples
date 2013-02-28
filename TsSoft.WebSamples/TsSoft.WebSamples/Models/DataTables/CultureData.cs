@@ -10,8 +10,8 @@
 
         public string NativeName { get; set; }
 
-        public bool IsNeutralCulture { get; set; }
+        public CultureNeutrality Neutrality { get; set; }
 
-        public bool IsRightToLeft { get; set; }
+        public CultureWritingDirection WritingDirection { get; set; }
     }
 }

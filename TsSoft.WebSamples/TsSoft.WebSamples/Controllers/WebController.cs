@@ -5,6 +5,7 @@
     using System.Globalization;
     using System.Linq;
     using System.Web.Mvc;
+    using TsSoft.Web.Mvc.DataTablesNet;
     using TsSoft.WebSamples.Models.DataTables;
 
     public class WebController : Controller
@@ -24,8 +25,8 @@
                 DisplayName = x.DisplayName,
                 EnglishName = x.EnglishName,
                 NativeName = x.NativeName,
-                IsNeutralCulture = x.IsNeutralCulture,
-                IsRightToLeft = x.TextInfo.IsRightToLeft,
+                Neutrality = x.IsNeutralCulture ? CultureNeutrality.Neutral : CultureNeutrality.NotNeutral,
+                WritingDirection = x.TextInfo.IsRightToLeft ? CultureWritingDirection.RightToLeft : CultureWritingDirection.LeftToRight,
             });
             IEnumerable<CultureData> culturesSortable = null;
             foreach (var column in request.SortColumns)
@@ -33,19 +34,47 @@
                 switch (column.Name)
                 {
                     case "Name":
-                        culturesSortable = culturesData.OrderBy(x => x.Name);
+                        if (column.Order == SortOrder.Ascending)
+                        {
+                            culturesSortable = culturesData.OrderBy(x => x.Name);
+                        }
+                        else
+                        {
+                            culturesSortable = culturesData.OrderByDescending(x => x.Name);
+                        }
                         break;
 
-                    case "CurrentLocaleName":
-                        culturesSortable = culturesData.OrderBy(x => x.DisplayName);
+                    case "DisplayName":
+                        if (column.Order == SortOrder.Ascending)
+                        {
+                            culturesSortable = culturesData.OrderBy(x => x.DisplayName);
+                        }
+                        else
+                        {
+                            culturesSortable = culturesData.OrderByDescending(x => x.DisplayName);
+                        }
                         break;
 
                     case "EnglishName":
-                        culturesSortable = culturesData.OrderBy(x => x.EnglishName);
+                        if (column.Order == SortOrder.Ascending)
+                        {
+                            culturesSortable = culturesData.OrderBy(x => x.EnglishName);
+                        }
+                        else
+                        {
+                            culturesSortable = culturesData.OrderByDescending(x => x.EnglishName);
+                        }
                         break;
 
                     case "NativeName":
-                        culturesSortable = culturesData.OrderBy(x => x.NativeName);
+                        if (column.Order == SortOrder.Ascending)
+                        {
+                            culturesSortable = culturesData.OrderBy(x => x.NativeName);
+                        }
+                        else
+                        {
+                            culturesSortable = culturesData.OrderByDescending(x => x.NativeName);
+                        }
                         break;
 
                     default:
@@ -53,9 +82,15 @@
                         break;
                 }
             }
-            var responseData = culturesSortable
-                                .Where(x => x.IsNeutralCulture == request.IsNeutralCulture)
-                                .Where(x => x.IsRightToLeft == request.IsRightToLeft);
+            IEnumerable<CultureData> responseData = culturesSortable;
+            if (request.Criteria.WritingDirection != CultureWritingDirection.All)
+            {
+                responseData = responseData.Where(x => x.WritingDirection == request.Criteria.WritingDirection);
+            }
+            if (request.Criteria.Neutrality != CultureNeutrality.All)
+            {
+                responseData = responseData.Where(x => x.Neutrality == request.Criteria.Neutrality);
+            }
             var response = new CultureResponse
             {
                 aaData = responseData.Skip(request.Skip).Take(request.Take).ToList(),

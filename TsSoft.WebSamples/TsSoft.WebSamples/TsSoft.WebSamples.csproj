@@ -148,9 +148,12 @@
     <Compile Include="ConfigSections\SocialConfigSection.cs" />
     <Compile Include="Models\Actions.cs" />
     <Compile Include="Models\DataTables\CultureData.cs" />
+    <Compile Include="Models\DataTables\CultureNeutrality.cs" />
     <Compile Include="Models\DataTables\CultureResponse.cs" />
+    <Compile Include="Models\DataTables\CultureWritingDirection.cs" />
     <Compile Include="Models\DataTables\DataTableCultureModelBuilder.cs" />
     <Compile Include="Models\DataTables\DataTableCultureSettings.cs" />
+    <Compile Include="Models\DataTables\SearchCriteria.cs" />
     <Compile Include="Models\SocialContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -4,8 +4,6 @@
 
     public class DataTableCultureSettings : DataTableSettings
     {
-        public bool IsNeutralCulture { get; set; }
-
-        public bool IsRightToLeft { get; set; }
+        public SearchCriteria Criteria { get; set; }
     }
 }

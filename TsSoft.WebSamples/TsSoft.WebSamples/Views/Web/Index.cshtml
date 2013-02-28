@@ -1,6 +1,20 @@
 ﻿@{
     ViewBag.Title = "";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var culturesNeutrality = new List<SelectListItem>()
+    {
+        new SelectListItem(){Selected = true, Value = TsSoft.WebSamples.Models.DataTables.CultureNeutrality.All.ToString(), Text = "Не имеет значения"},
+        new SelectListItem(){Selected = false, Value = TsSoft.WebSamples.Models.DataTables.CultureNeutrality.Neutral.ToString(), Text = "Нейтральна"},
+        new SelectListItem(){Selected = false, Value = TsSoft.WebSamples.Models.DataTables.CultureNeutrality.NotNeutral.ToString(), Text = "Не нейтральна"},
+    };
+
+    var culturesWritingDirection = new List<SelectListItem>()
+    {
+        new SelectListItem(){Selected = true, Value = TsSoft.WebSamples.Models.DataTables.CultureWritingDirection.All.ToString(), Text = "Не имеет значения"},
+        new SelectListItem(){Selected = false, Value = TsSoft.WebSamples.Models.DataTables.CultureWritingDirection.LeftToRight.ToString(), Text = "Слева направо"},
+        new SelectListItem(){Selected = false, Value = TsSoft.WebSamples.Models.DataTables.CultureWritingDirection.RightToLeft.ToString(), Text = "Справа налево"},
+    };
+    
 }
 @Scripts.Render("~/Scripts/DataTables-1.9.4/media/js/jquery.dataTables.min.js")
 <style>
@@ -55,8 +69,9 @@
         }
 </style>
 <script>
+    var dtable;
     $(document).ready(function () {
-        $('#example').dataTable({
+        dTable = $('#example').dataTable({
             "bServerSide": true,
             "bProcessing": true,
             "bPaginate": true,
@@ -78,6 +93,7 @@
                 "sLengthMenu": "Отображать _MENU_",
                 "sProcessing": "Поиск...",
                 "sInfo": "Показано локалей с _START_ по _END_ (всего _TOTAL_)",
+                "sInfoFiltered": " - отфильтровано из _MAX_ записей",
                 "sInfoEmpty": ""
             },
             "sAjaxSource": "@Url.Action("GetData", "Web")",
@@ -88,11 +104,10 @@
               { "mData": "NativeName" },
             ],
             "fnServerData": function (sSource, aoData, fnCallback, oSettings) {
-                var IsRightToLeft = { name: "IsRightToLeft", value: ($("#IsRightToLeft:checked").length > 0)};
-                var IsNeutralCulture = { name: "IsNeutralCulture", value: ($("#IsNeutralCulture:checked").length > 0) };
-                aoData.push(IsRightToLeft);
-                aoData.push(IsNeutralCulture);
-                console.log(aoData);
+                var Neutrality = { name: "Criteria.Neutrality", value: $("#Neutrality").val() };
+                var WritingDirection = { name: "Criteria.WritingDirection", value: $("#WritingDirection").val() };
+                aoData.push(Neutrality);
+                aoData.push(WritingDirection);
                 oSettings.jqXHR = $.ajax({
                     "dataType": 'json',
                     "type": "POST",
@@ -102,17 +117,21 @@
                 });
             },
         });
+
+        $(".form-criteria").on('change', "select", function () {
+            dTable.fnDraw();
+        });
     });
 </script>
 <div class="container info-container">
-    <table class="form">
+    <table class="form form-criteria">
         <tr>
-            <td>Является нейтральной культурой</td>
-            <td>@Html.CheckBox("IsNeutralCulture", false)</td>
+            <td>Нейтральность культуры</td>
+            <td>@Html.DropDownList("Neutrality", culturesNeutrality, new List<SelectListItem>())</td>
         </tr>
         <tr>
-            <td>Письмо в языке справа налево</td>
-            <td>@Html.CheckBox("IsRightToLeft", false)</td>
+            <td>Направление письма</td>
+            <td>@Html.DropDownList("WritingDirection", culturesWritingDirection, new List<SelectListItem>())</td>
         </tr>
     </table>
 </div>

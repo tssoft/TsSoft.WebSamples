@@ -6,12 +6,13 @@
 
     public class DataTableCultureModelBuilder : DataTableModelBinder
     {
-        public new object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
+        public override object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
         {
             var model = (DataTableCultureSettings)base.BindModel(controllerContext, bindingContext);
             var request = controllerContext.HttpContext.Request;
-            model.IsNeutralCulture = Convert.ToBoolean(request["IsNeutralCulture"]);
-            model.IsRightToLeft = Convert.ToBoolean(request["IsRightToLeft"]);
+            model.Criteria = new SearchCriteria();
+            model.Criteria.Neutrality = (CultureNeutrality)Enum.Parse(typeof(CultureNeutrality), request["Criteria.Neutrality"]);
+            model.Criteria.WritingDirection = (CultureWritingDirection)Enum.Parse(typeof(CultureWritingDirection), request["Criteria.WritingDirection"]);
             return model;
         }
     }
