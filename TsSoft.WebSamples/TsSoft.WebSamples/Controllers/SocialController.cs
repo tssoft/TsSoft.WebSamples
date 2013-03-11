@@ -5,6 +5,8 @@
     using System.Linq;
     using System.Web.Mvc;
     using TsSoft.Social.Facebook;
+    using TsSoft.Social.OAuth;
+    using TsSoft.Social.Twitter;
     using TsSoft.Social.Vk;
     using TsSoft.WebSamples.ConfigSections;
     using TsSoft.WebSamples.Models;
@@ -19,22 +21,42 @@
         private static readonly SocialConfigSection socialSection = ((SocialConfigSection)ConfigurationManager.GetSection("socialSettings"));
         private static readonly UrlHelper urlHelper = new UrlHelper(System.Web.HttpContext.Current.Request.RequestContext);
 
-        private VkAuthorization vk = new VkAuthorization(
-            socialSection.GetValue("Vk.appId"),
-            socialSection.GetValue("Vk.appSecret"),
-            ConfigurationManager.AppSettings["AppBaseUrl"] + urlHelper.Content(urlHelper.Action("VkAuthResponse"))
+        private static VkAuthorization vk;
+
+        private static FacebookAuthorization facebook;
+
+        private static AccessCredentials twitterCredentials = new AccessCredentials();
+
+        static SocialController()
+        {
+            vk = new VkAuthorization(
+                socialSection.GetValue("Vk.appId"),
+                socialSection.GetValue("Vk.appSecret"),
+                ConfigurationManager.AppSettings["AppBaseUrl"] + urlHelper.Content(urlHelper.Action("VkAuthResponse"))
             );
 
-        private FacebookAuthorization facebook = new FacebookAuthorization(
-            socialSection.GetValue("Facebook.appId"),
-            socialSection.GetValue("Facebook.appSecret"),
-            ConfigurationManager.AppSettings["AppBaseUrl"] + urlHelper.Content(urlHelper.Action("FacebookAuthResponse"))
+            facebook = new FacebookAuthorization(
+                socialSection.GetValue("Facebook.appId"),
+                socialSection.GetValue("Facebook.appSecret"),
+                ConfigurationManager.AppSettings["AppBaseUrl"] + urlHelper.Content(urlHelper.Action("FacebookAuthResponse"))
             );
+
+            twitterCredentials.ConsumerKey = socialSection.GetValue("Twitter.consumerKey");
+            twitterCredentials.ConsumerSecret = socialSection.GetValue("Twitter.consumerSecret");
+        }
 
         public ActionResult Index(string message = null)
         {
             ViewBag.Message = message;
-            return View(context);
+
+            var model = new SocialViewModel
+            {
+                FacebookAuthorized = context.FacebookUser.Any(x => x.ExpireTime > DateTime.Now),
+                VkAuthorized = context.VkUser.Any(),
+                TwitterAuthorized = context.TwitterUser.Any()
+            };
+
+            return View(model);
         }
 
         public RedirectResult VkAuth()
@@ -101,6 +123,10 @@
             {
                 context.VkUser.Remove(context.VkUser.First());
             }
+            if (context.TwitterUser.Any())
+            {
+                context.TwitterUser.Remove(context.TwitterUser.First());
+            }
             context.SaveChanges();
             return RedirectToAction("Index");
         }
@@ -108,6 +134,7 @@
         [HttpPost]
         public JsonResult MessageRequest(string message, string titleMessage, string socialName)
         {
+            var twitterUserId = (string) Session["userId"];
             switch (socialName)
             {
                 case VkName:
@@ -117,11 +144,42 @@
                     return FacebookRequest(message);
 
                 case TwitterName:
-                    return Json("");
+                    return TwitterRequest(message);
 
                 default:
                     return Json("");
             }
+        }
+
+        [NonAction]
+        private JsonResult TwitterRequest(string message)
+        {
+            var result = new { status = "error", message = "twitter error: You must be authorized" };
+
+            if (context.TwitterUser.Count() == 0)
+            {
+                return Json(result);
+            }
+
+            var user = context.TwitterUser.First();
+
+            result = new { status = "success", message = "twitter message sent" };
+
+            var command = new SendMessageCommand();
+            command.Tokens = user.AccessTokens;
+            command.Tokens.ConsumerKey = twitterCredentials.ConsumerKey;
+            command.Tokens.ConsumerSecret = twitterCredentials.ConsumerSecret;
+            command.Text = message;
+            try
+            {
+                command.Execute();
+            }
+            catch(Exception e)
+            {
+                result = new { status = "error", message = "twitter error: " + e.Message };
+            }
+
+            return Json(result);
         }
 
         private JsonResult VkRequest(string message, string title)
@@ -171,5 +229,78 @@
             }
             return Json(new { status = "success", message = "facebook message sent" });
         }
+
+        public ActionResult TwitterAuth()
+        {
+            var requestTokenCmd = new GetRequestTokenCommand();
+
+            requestTokenCmd.Tokens.ConsumerKey = twitterCredentials.ConsumerKey;
+            requestTokenCmd.Tokens.ConsumerSecret = twitterCredentials.ConsumerSecret;
+
+            requestTokenCmd.CallbackUrl = Url.Action("TwitterCallback", null, null, Request.Url.Scheme);
+            requestTokenCmd.Method = "POST";
+
+            var response = requestTokenCmd.Execute();
+
+            Session.Add("requestToken", response.Token);
+            Session.Add("verifyString", response.Verifier);
+
+            if (!string.IsNullOrEmpty(response.Token))
+            {
+                var authorizeCmd = new AuthorizeCommand();
+                authorizeCmd.RequestTokens = response;
+                return Redirect(authorizeCmd.Execute());
+            }
+
+            throw new ArgumentNullException("RequestTokens", "Не удалось получить токен запроса");
+        }
+
+        public ActionResult TwitterCallback()
+        {
+            if (Request["oauth_token"] == null)
+            {
+                throw new ArgumentNullException("oauth_token");
+            }
+
+            var getAccessTokenCmd = new GetAccessTokenCommand();
+
+            getAccessTokenCmd.RequestTokens = new RequestCredentials
+            {
+                Token = (string)Request["oauth_token"],
+                Verifier = (string)Request["oauth_verifier"]
+            };
+
+            getAccessTokenCmd.Tokens.ConsumerKey = twitterCredentials.ConsumerKey;
+            getAccessTokenCmd.Tokens.ConsumerSecret = twitterCredentials.ConsumerSecret;
+
+            var accessCredentials = getAccessTokenCmd.Execute();
+
+            if (!string.IsNullOrEmpty(accessCredentials.AccessToken) && !string.IsNullOrEmpty(accessCredentials.AccessTokenSecret))
+            {
+                Session.Add("accessToken", accessCredentials.AccessToken);
+                Session.Add("secret", accessCredentials.AccessTokenSecret);
+            }
+
+            if (context.TwitterUser.Count() > 0)
+            {
+                context.TwitterUser.Remove(context.TwitterUser.First());
+            }
+
+            var userId = Guid.NewGuid();
+            Session.Add("userId", userId.ToString());
+
+
+            context.TwitterUser.Add(new TwitterUser
+            {
+                AccessTokens = accessCredentials,
+                Id = userId.ToString()
+            });
+
+            context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+        
+
     }
 }

@@ -1,4 +1,4 @@
-﻿@model TsSoft.WebSamples.Models.SocialContext
+﻿@model TsSoft.WebSamples.Models.SocialViewModel
 
 @{
     ViewBag.Title = "Авторизация и отправка сообщений в социальные сети";
@@ -22,7 +22,7 @@
             url: '@Url.Action("MessageRequest", "Social")',
             data: request,
             dataType: 'json',
-            type: "post",
+            type: 'post',
             success: sendMessageSuccessCallback,
             error: function (jqXHR, textStatus, errorThrown) {
                 console.log(jqXHR);
@@ -83,7 +83,7 @@
     @Html.TextArea("message", new { @class = "form-field", @id = "textMessage" })<br />
     <div class="form-title">Title (for vk.com):</div>
     @Html.TextBox("titleMessage", null, new { @class = "form-field", @id = "tileMessage" })<br />
-        if (!Model.FacebookUser.Any(x => x.ExpireTime > DateTime.Now))
+        if (!Model.FacebookAuthorized)
         {
     <button class="auth button submit-button" value="@Url.Action("FacebookAuth", "Social")">Logged in facebook</button><br />
         }
@@ -91,7 +91,7 @@
         {
     <button class="send button submit-button" name="facebook">Send in facebook</button><br />
         }
-        if (!Model.VkUser.Any())
+        if (!Model.VkAuthorized)
         {
     <button class="auth button submit-button" value="@Url.Action("VkAuth", "Social")">Logged in vk.com</button><br />
         }
@@ -99,13 +99,22 @@
         {
     <button class="send button submit-button" name="vk">Send in vk.com</button><br />
         }
-        if ((Model.FacebookUser.Count(x => (x.ExpireTime > DateTime.Now)) + Model.VkUser.Count()) > 1)
+        if (!Model.TwitterAuthorized)
         {
+            <button class="auth button submit-button" value="@Url.Action("TwitterAuth", "Social")">Logged in twitter.com</button><br />
+        }
+        else
+        {
+            <button class="send button submit-button" name="twitter">Send in twitter.com</button><br />
+        }
+
+    if (Model.FacebookAuthorized && Model.VkAuthorized && Model.TwitterAuthorized)
+    {
     <button class="submit-button button" id="sendAll">Send in all social</button><br />
-        }
-        if ((Model.FacebookUser.Count(x => (x.ExpireTime > DateTime.Now)) + Model.VkUser.Count()) >= 1)
-        {
+    }
+    if (Model.FacebookAuthorized && Model.VkAuthorized && Model.TwitterAuthorized)
+    {
     <button class="auth button submit-button" value="@Url.Action("ClearAuthorization", "Social")">Clear authorization</button><br />
-        }
+    }
     <div id="response"></div>
 }

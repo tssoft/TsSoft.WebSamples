@@ -49,7 +49,9 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -114,12 +116,13 @@
     <Reference Include="TsSoft.Commons">
       <HintPath>..\packages\TsSoft.Commons.2.0.4765.29167\lib\net40\TsSoft.Commons.dll</HintPath>
     </Reference>
-    <Reference Include="TsSoft.Social, Version=1.0.4806.24042, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="TsSoft.Social, Version=1.0.4818.23168, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\TsSoft.Social.1.0.4806.24042\lib\net4\TsSoft.Social.dll</HintPath>
+      <HintPath>..\packages\TsSoft.Social.1.0.4818.23168\lib\net4\TsSoft.Social.dll</HintPath>
     </Reference>
-    <Reference Include="TsSoft.Web">
-      <HintPath>..\..\..\TsSoft.Web\TsSoft.Web\bin\Debug\TsSoft.Web.dll</HintPath>
+    <Reference Include="TsSoft.Web, Version=1.0.4818.22287, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\TsSoft.Web.1.0.4818.22287\lib\net4\TsSoft.Web.dll</HintPath>
     </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
@@ -132,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\DatabaseConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
@@ -155,6 +159,7 @@
     <Compile Include="Models\DataTables\DataTableCultureSettings.cs" />
     <Compile Include="Models\DataTables\SearchCriteria.cs" />
     <Compile Include="Models\SocialContext.cs" />
+    <Compile Include="Models\SocialViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -410,11 +415,13 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>False</UseIIS>
+          <UseIIS>True</UseIIS>
           <AutoAssignPort>False</AutoAssignPort>
-          <DevelopmentServerPort>1967</DevelopmentServerPort>
+          <DevelopmentServerPort>1962</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:4240/</IISUrl>
+          <IISUrl>http://127.0.0.1:1962/</IISUrl>
+          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
+          <IISAppRootUrl>http://127.0.0.1:1962/</IISAppRootUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
