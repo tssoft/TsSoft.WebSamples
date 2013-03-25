@@ -14,10 +14,6 @@
 
         public ActionResult Index()
         {
-            var section = ((SocialConfigSection)ConfigurationManager.GetSection("socialSettings"));
-            var b = (ConnectionStringsSection)ConfigurationManager.GetSection("connectionStrings");
-            var c = b.ConnectionStrings.Cast<ConnectionStringSettings>().ToList();
-            var a = section.GetValue("Vk.appId");
             return View();
         }
 
