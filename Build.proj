@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0" DefaultTargets="All">
+
+  <PropertyGroup>
+    <LibraryPath>$(MSBuildProjectDirectory)\Library</LibraryPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="TSSoft.MsBuild.CopySubtree"
+             AssemblyFile="$(LibraryPath)\TSSoft.MsBuild.dll" />
+  <UsingTask TaskName="TSSoft.MsBuild.ZipFiles"
+             AssemblyFile="$(LibraryPath)\TSSoft.MsBuild.dll" />
+  <UsingTask TaskName="MSBuild.ExtensionPack.FileSystem.File" 
+             AssemblyFile="$(LibraryPath)\MSBuild.ExtensionPack.dll" />
+  <UsingTask TaskName="MSBuild.ExtensionPack.Compression.Zip" 
+             AssemblyFile="$(LibraryPath)\MSBuild.ExtensionPack.dll" />
+
+  <!--Import Project="$(MSBuildProjectDirectory)\properties\build.properties" /-->
+  <PropertyGroup>
+    <SourceDirectory>$(MSBuildProjectDirectory)</SourceDirectory>
+    <SolutionDirectory>$(SourceDirectory)\TsSoft.WebSamples</SolutionDirectory>
+    <LibraryDirectory>$(SourceDirectory)\Library</LibraryDirectory>
+    <BuildDirectory>$(MSBuildProjectDirectory)\Build</BuildDirectory>
+    <TargetDirectory>$(MSBuildProjectDirectory)\Target</TargetDirectory>
+    <ProjectDirectory>$(SolutionDirectory)\TsSoft.WebSamples</ProjectDirectory>
+    <TransformationDirectory>$(ProjectDirectory)\obj\@@**Configuration**@@\TransformWebConfig\transformed</TransformationDirectory>
+  </PropertyGroup>
+
+  <Target Name="All" DependsOnTargets="Clean; Release" />
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(MSBuildProjectDirectory)\obj" />
+    <RemoveDir Directories="$(BuildDirectory)" />
+    <RemoveDir Directories="$(TargetDirectory)" />
+  </Target>
+
+  <Target Name="Init">
+    <MakeDir Directories="$(BuildDirectory)" />
+    <MakeDir Directories="$(TargetDirectory)" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="Init">
+    <MSBuild Projects="$(SolutionDirectory)\TsSoft.WebSamples.sln" Properties="Configuration=@@**Configuration**@@" />
+    <MSBuild Projects="$(ProjectDirectory)\TsSoft.WebSamples.csproj" Properties="Configuration=@@**Configuration**@@" Targets="TransformWebConfig"/>
+  </Target>
+
+  <Target Name="Release" DependsOnTargets="Init; Build">
+    <ItemGroup>
+      <InstallerWebApp Include="$(ProjectDirectory)\bin\*.dll" />
+      <InstallerWebApp Include="$(ProjectDirectory)\**\*.as*x" />
+      <InstallerWebApp Include="$(ProjectDirectory)\**\*.swf" />
+      <InstallerWebApp Include="$(ProjectDirectory)\Content\**\*" />
+      <InstallerWebApp Include="$(ProjectDirectory)\Scripts\**\*" />
+      <InstallerWebApp Include="$(ProjectDirectory)\Views\**\*" />
+    </ItemGroup>
+    <PropertyGroup>
+      <PackageDirectory>$(BuildDirectory)\Package</PackageDirectory>
+    </PropertyGroup>
+    <Copy
+            SourceFiles="$(TransformationDirectory)\Web.config"
+            DestinationFolder="$(PackageDirectory)"
+        />
+    <CopySubtree
+      SourceFiles="@(InstallerWebApp)"
+      SourceRoot="$(ProjectDirectory)"
+      DestinationFolder="$(PackageDirectory)"
+      SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <InstallFiles Include="$(PackageDirectory)\**\*.*" />
+    </ItemGroup>
+    <ZipFiles Files="@(InstallFiles)"
+         WorkingDirectory="$(PackageDirectory)"
+         ZipFileName="$(TargetDirectory)\@@**Configuration**@@.zip" />
+    <RemoveDir Directories="$(BuildDirectory)" />
+  </Target>
+</Project>

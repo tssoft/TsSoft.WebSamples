@@ -383,6 +383,7 @@
     <Content Include="Views\Web\Index.cshtml" />
     <None Include="Web.ProductionServer.config">
       <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
     </None>
     <None Include="Web.TestServer.config">
       <DependentUpon>Web.config</DependentUpon>
